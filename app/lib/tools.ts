@@ -1,0 +1,59 @@
+export interface Tool {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  href: string;
+  category?: string;
+}
+
+export const tools: Tool[] = [
+  {
+    id: "heic-to-jpeg",
+    name: "HEIC to JPEG",
+    description: "Convert HEIC images to JPEG format",
+    icon: "ImageIcon",
+    href: "/tools/heic-to-jpeg",
+    category: "Image Conversion",
+  },
+  {
+    id: "pdf-merger",
+    name: "PDF Merger",
+    description: "Combine multiple PDF files into one",
+    icon: "FileText",
+    href: "/tools/pdf-merger",
+    category: "PDF Tools",
+  },
+  {
+    id: "image-resizer",
+    name: "Image Resizer",
+    description: "Resize images to custom dimensions",
+    icon: "Maximize2",
+    href: "/tools/image-resizer",
+    category: "Image Editing",
+  },
+  {
+    id: "json-formatter",
+    name: "JSON Formatter",
+    description: "Format and validate JSON data",
+    icon: "Code",
+    href: "/tools/json-formatter",
+    category: "Developer Tools",
+  },
+  {
+    id: "qr-generator",
+    name: "QR Code Generator",
+    description: "Create QR codes from text or URLs",
+    icon: "QrCode",
+    href: "/tools/qr-generator",
+    category: "Utilities",
+  },
+  {
+    id: "color-picker",
+    name: "Color Picker",
+    description: "Pick and convert colors between formats",
+    icon: "Palette",
+    href: "/tools/color-picker",
+    category: "Design Tools",
+  },
+];
