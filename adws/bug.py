@@ -1,0 +1,40 @@
+#!/usr/bin/env python3
+"""
+Run claude with /bug command in the pyramid-tools project.
+Usage: uv run bug.py <your bug description>
+"""
+
+import subprocess
+import sys
+
+
+def main():
+    if len(sys.argv) < 2:
+        print("Usage: uv run bug.py <bug description>")
+        print("Example: uv run bug.py 'Fix PDF preview not loading'")
+        sys.exit(1)
+
+    # Join all arguments after the script name into a single bug description
+    bug_input = " ".join(sys.argv[1:])
+
+    # Build the claude command
+    claude_command = f'/bug {bug_input}'
+
+    # Run claude with the command
+    try:
+        result = subprocess.run(
+            ["claude", "-p", claude_command],
+            cwd="/Users/sbolster/projects/corporate/pyramid-tools",
+            check=True
+        )
+        sys.exit(result.returncode)
+    except subprocess.CalledProcessError as e:
+        print(f"Error running claude: {e}")
+        sys.exit(e.returncode)
+    except FileNotFoundError:
+        print("Error: 'claude' command not found. Make sure Claude CLI is installed.")
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

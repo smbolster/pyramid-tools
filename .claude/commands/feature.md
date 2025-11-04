@@ -4,7 +4,7 @@ Create a new plan in specs/\*.md to implement the `Feature` using the exact spec
 
 ## Instructions
 
-- Create a new branch from the master branch and check it out
+- FIRST: Call the `/create-branch` command to create a feature branch: `/create-branch feature $ARGUMENTS`
 - You're writing a plan to implement a net new feature that will add value to the application.
 - Create the plan in the `specs/*.md` file. Name it appropriately based on the `Feature`and prefix the the spec with a 3 digit number in sequence, start with 001 if there are no numbered specs already.
 - Use the `Plan Format` below to create the plan.

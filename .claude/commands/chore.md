@@ -4,6 +4,7 @@ Create a new plan in specs/*.md to resolve the `Chore` using the exact specified
 
 ## Instructions
 
+- FIRST: Call the `/create-branch` command to create a chore branch: `/create-branch chore $ARGUMENTS`
 - You're writing a plan to resolve a chore, it should be simple but we need to be thorough and precise so we don't miss anything or waste time with any second round of changes.
 - Create the plan in the `specs/*.md` file. Name it appropriately based on the `Chore` and prefix the the spec with a 3 digit number in sequence, start with 001 if there are no numbered specs already.
 - Use the plan format below to create the plan. 

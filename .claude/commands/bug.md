@@ -4,6 +4,7 @@ Create a new plan in specs/*.md to resolve the `Bug` using the exact specified m
 
 ## Instructions
 
+- FIRST: Call the `/create-branch` command to create a bug fix branch: `/create-branch bug $ARGUMENTS`
 - You're writing a plan to resolve a bug, it should be thorough and precise so we fix the root cause and prevent regressions.
 - Create the plan in the `specs/*.md` file. Name it appropriately based on the `Bug`.
 - Use the plan format below to create the plan. 
