@@ -6,7 +6,7 @@ Create a new plan in specs/\*.md to implement the `Feature` using the exact spec
 
 - Create a new branch from the master branch and check it out
 - You're writing a plan to implement a net new feature that will add value to the application.
-- Create the plan in the `specs/*.md` file. Name it appropriately based on the `Feature`.
+- Create the plan in the `specs/*.md` file. Name it appropriately based on the `Feature`and prefix the the spec with a 3 digit number in sequence, start with 001 if there are no numbered specs already.
 - Use the `Plan Format` below to create the plan.
 - Research the codebase to understand existing patterns, architecture, and conventions before planning the feature.
 - IMPORTANT: Replace every <placeholder> in the `Plan Format` with the requested value. Add as much detail as needed to implement the feature successfully.
@@ -101,7 +101,8 @@ Execute every command to validate the feature works correctly with zero regressi
 
 <list commands you'll use to validate with 100% confidence the feature is implemented correctly with zero regressions. every command must execute without errors so be specific about what you want to run to validate the feature works as expected. Include commands to test the feature end-to-end.>
 
-- `cd app/server && uv run pytest` - Run server tests to validate the feature works with zero regressions
+- `cd app && npm run lint` - Run linting to validate code quality
+- `cd app && npm run build` - Build the Next.js app to validate there are no build errors
 
 ## Notes
 
