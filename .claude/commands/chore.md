@@ -27,6 +27,8 @@ Ignore all other files in the codebase.
 ```md
 # Chore: <chore name>
 
+## Chore Plan Created: <chore filepath>
+
 ## Chore Description
 <describe the chore in detail>
 
