@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { FileUploadZone } from "@/components/file-upload-zone";
 import { ConversionProgress } from "@/components/conversion-progress";
+import { ThemeToggle } from "@/components/theme-toggle";
 import {
   FileConversionState,
   ConversionStatus,
@@ -158,6 +159,11 @@ export default function HeicToJpegConverter() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
+      {/* Theme toggle in top-right corner */}
+      <div className="fixed top-4 right-4 z-50">
+        <ThemeToggle />
+      </div>
+
       <main className="container mx-auto px-4 py-16 sm:px-6 lg:px-8 max-w-4xl">
         {/* Header */}
         <div className="mb-12">

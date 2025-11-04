@@ -25,6 +25,14 @@ export const tools: Tool[] = [
     category: "PDF Tools",
   },
   {
+    id: "pdf-splitter",
+    name: "PDF Splitter",
+    description: "Split PDF documents into separate files",
+    icon: "Scissors",
+    href: "/tools/pdf-splitter",
+    category: "PDF Tools",
+  },
+  {
     id: "image-resizer",
     name: "Image Resizer",
     description: "Resize images to custom dimensions",
@@ -45,7 +53,7 @@ export const tools: Tool[] = [
     name: "QR Code Generator",
     description: "Create QR codes from text or URLs",
     icon: "QrCode",
-    href: "/tools/qr-generator",
+    href: "/tools/qr-code-generator",
     category: "Utilities",
   },
   {

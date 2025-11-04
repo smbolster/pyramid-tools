@@ -33,6 +33,8 @@ Ignore all other files in the codebase.
 ```md
 # Feature: <feature name>
 
+## Feature Plan Created: <feature filepath>
+
 ## Feature Description
 
 <describe the feature in detail, including its purpose and value to users>
