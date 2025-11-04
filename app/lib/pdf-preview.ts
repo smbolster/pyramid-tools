@@ -35,22 +35,25 @@ export function validatePdfFile(file: File): PdfMergerError | null {
 /**
  * Gets the page count from a PDF file
  */
-export async function getPdfPageCount(file: File): Promise<number | null> {
+export async function getPdfPageCount(file: File): Promise<number> {
   try {
     const arrayBuffer = await file.arrayBuffer();
     const pdfDoc = await PDFDocument.load(arrayBuffer);
     return pdfDoc.getPageCount();
   } catch (error) {
     console.error("Error getting PDF page count:", error);
-    return null;
+    throw new Error("Failed to get PDF page count");
   }
 }
 
 /**
- * Generates a preview image (first page) from a PDF file
+ * Generates a preview image from a PDF file page
+ * @param file - PDF file
+ * @param pageNumber - Page number (1-indexed), defaults to 1
  */
 export async function generatePdfPreview(
-  file: File
+  file: File,
+  pageNumber: number = 1
 ): Promise<string | null> {
   try {
     // Ensure we're on the client side
@@ -60,14 +63,15 @@ export async function generatePdfPreview(
 
     // Dynamically import pdfjs-dist
     const pdfjs = await import("pdfjs-dist");
-    pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+    // Use unpkg CDN which has better version coverage
+    pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
     const arrayBuffer = await file.arrayBuffer();
     const loadingTask = pdfjs.getDocument({ data: arrayBuffer });
     const pdf = await loadingTask.promise;
 
-    // Get the first page
-    const page = await pdf.getPage(1);
+    // Get the specified page (default to first page)
+    const page = await pdf.getPage(pageNumber);
 
     // Set up canvas for rendering
     const scale = 1.5;
@@ -84,10 +88,11 @@ export async function generatePdfPreview(
     canvas.height = viewport.height;
 
     // Render the page
-    const renderContext = {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const renderContext: any = {
       canvasContext: context,
       viewport: viewport,
-    } as any; // Type assertion needed for pdfjs-dist compatibility
+    };
 
     await page.render(renderContext).promise;
 
