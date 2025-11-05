@@ -64,4 +64,12 @@ export const tools: Tool[] = [
     href: "/tools/color-picker",
     category: "Design Tools",
   },
+  {
+    id: "screenshot-annotator",
+    name: "Screenshot Annotator",
+    description: "Mark up and download screenshots instantly",
+    icon: "PenTool",
+    href: "/tools/screenshot-annotator",
+    category: "Image Editing",
+  },
 ];

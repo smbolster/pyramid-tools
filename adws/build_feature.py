@@ -87,9 +87,27 @@ def main():
     all_output.append(f"**Timestamp:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     all_output.append("\n" + "=" * 80 + "\n")
 
-    # Step 1: Run feature.py
-    print(f"Step 1: Creating feature plan for: {feature_description}")
-    all_output.append(f"## Step 1: Feature Planning\n")
+    # Step 1: Create git branch
+    print(f"Step 1: Creating git branch for: {feature_description}")
+    all_output.append(f"## Step 1: Git Branch Creation\n")
+
+    branch_output, success = run_command(
+        ["claude", "-p", f"/create-branch feature {feature_description}"],
+        "Creating feature branch..."
+    )
+    all_output.append(f"```\n{branch_output}\n```\n")
+
+    if not success:
+        error_msg = "Failed to create git branch. Aborting."
+        print(f"\n{error_msg}")
+        all_output.append(f"\n**ERROR:** {error_msg}\n")
+        log_file.write_text("\n".join(all_output))
+        print(f"\nLog saved to: {log_file}")
+        sys.exit(1)
+
+    # Step 2: Run feature.py
+    print(f"\nStep 2: Creating feature plan for: {feature_description}")
+    all_output.append(f"## Step 2: Feature Planning\n")
 
     feature_output, success = run_command(
         ["claude", "-p", f"/feature {feature_description}"],
@@ -105,7 +123,7 @@ def main():
         print(f"\nLog saved to: {log_file}")
         sys.exit(1)
 
-    # Step 2: Extract spec file
+    # Step 3: Extract spec file
     spec_file = extract_spec_file(feature_output)
 
     if not spec_file:
@@ -119,9 +137,9 @@ def main():
     print(f"\nFound spec file: {spec_file}")
     all_output.append(f"\n**Spec File Created:** `{spec_file}`\n")
 
-    # Step 3: Run implement.py with the spec file
-    print(f"\nStep 2: Implementing feature from: {spec_file}")
-    all_output.append(f"## Step 2: Feature Implementation\n")
+    # Step 4: Run implement.py with the spec file
+    print(f"\nStep 3: Implementing feature from: {spec_file}")
+    all_output.append(f"## Step 3: Feature Implementation\n")
 
     implement_output, success = run_command(
         ["claude", "-p", f"/implement {spec_file}"],
