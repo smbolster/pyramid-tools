@@ -68,7 +68,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     const effectiveTheme = getEffectiveTheme(initialPreference);
     setTheme(effectiveTheme);
     applyTheme(effectiveTheme);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, []);
 
   /**
