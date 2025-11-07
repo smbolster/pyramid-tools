@@ -17,6 +17,7 @@ Users frequently need to combine multiple PDF files into a single document for v
 ## Solution Statement
 
 Implement a client-side PDF merger using the `pdf-lib` library that processes all operations entirely in the browser. The solution will:
+
 - Accept multiple PDF file uploads via drag-and-drop or file selection
 - Display uploaded PDFs with previews showing the first page of each document
 - Enable drag-and-drop reordering of PDFs to control the final merge sequence
@@ -393,6 +394,7 @@ Execute validation commands to ensure the feature works correctly with zero regr
 ### Unit Tests
 
 Due to the client-side nature of this application and the current project structure (no testing framework set up), formal unit tests are not included in this specification. However, manual testing procedures are detailed in the step-by-step tasks. If a testing framework is added in the future, consider testing:
+
 - PDF validation functions (file type checking, size validation)
 - Filename generation utility
 - Reorder logic (array manipulation)
@@ -401,6 +403,7 @@ Due to the client-side nature of this application and the current project struct
 ### Integration Tests
 
 Manual integration tests to perform:
+
 - Complete user workflow from upload to download
 - File state management through the entire lifecycle
 - Preview generation and display
@@ -424,48 +427,56 @@ Manual integration tests to perform:
 ## Acceptance Criteria
 
 1. **File Upload**:
+
    - Users can upload multiple PDF files via drag-and-drop or file selection
    - System validates files are PDFs and within size limits
    - Clear error messages appear for invalid files
    - Upload zone is intuitive and responsive
 
 2. **File Management**:
+
    - All uploaded PDFs are displayed in a list with previews (first page thumbnail)
    - Each PDF shows filename, file size, and page count (if available)
    - Users can remove individual PDFs from the list
    - File list shows aggregate information (total files, total size)
 
 3. **Reordering**:
+
    - Users can drag and drop PDFs to reorder them
    - Visual feedback indicates drag state and drop position
    - Order changes are immediately reflected in the UI
    - Reordering works on both desktop and mobile/touch devices
 
 4. **Merging**:
+
    - Users can merge all uploaded PDFs in the displayed order
    - Merge operation shows progress/loading indicator
    - Merge completes successfully for valid PDFs
    - Errors are handled gracefully with helpful messages
 
 5. **Download**:
+
    - Successfully merged PDF can be downloaded
    - Downloaded file is a valid PDF containing all pages in correct order
    - Filename is meaningful and includes timestamp
    - Download works across different browsers
 
 6. **Performance**:
+
    - Preview generation completes within reasonable time (< 2s per PDF)
    - Merge operation completes within reasonable time (< 10s for typical use)
    - UI remains responsive during processing
    - No memory leaks or browser crashes with typical usage
 
 7. **Privacy & Security**:
+
    - All processing happens client-side in the browser
    - No files are uploaded to any server
    - No network requests are made with user PDF data
    - Preview URLs are properly cleaned up to prevent memory leaks
 
 8. **Design & UX**:
+
    - UI is consistent with existing Pyramid Tools design system
    - Color scheme matches the green McKim & Creed theme
    - Layout is responsive across mobile, tablet, and desktop
@@ -473,6 +484,7 @@ Manual integration tests to perform:
    - Loading states and progress indicators provide clear feedback
 
 9. **Accessibility**:
+
    - All functionality is keyboard accessible
    - Screen reader compatible with proper ARIA labels
    - Sufficient color contrast for all elements
