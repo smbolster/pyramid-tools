@@ -10,11 +10,13 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import {
   FileConversionState,
   ConversionStatus,
+  MAX_TOTAL_SIZE,
 } from "@/types/heic-converter";
 import {
   convertHeicToJpeg,
   createPreviewUrl,
   generateJpegFilename,
+  validateHeicFile,
 } from "@/lib/heic-converter";
 import { createZipFromFiles, downloadBlob } from "@/lib/zip-utils";
 
@@ -192,6 +194,13 @@ export default function HeicToJpegConverter() {
           <FileUploadZone
             onFilesSelected={handleFilesSelected}
             disabled={isConverting}
+            accept=".heic,.heif,image/heic,image/heif"
+            maxTotalSize={MAX_TOTAL_SIZE}
+            multiple={true}
+            validationFn={validateHeicFile}
+            title="Drop HEIC files here"
+            description="or click the button below to select files from your device. You can upload multiple files at once."
+            maxSizeLabel="Maximum file size: 50MB per file, 500MB total"
           />
         )}
 

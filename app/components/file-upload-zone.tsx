@@ -4,17 +4,46 @@ import { useCallback, useState } from "react";
 import { Upload } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { validateHeicFile } from "@/lib/heic-converter";
-import { MAX_TOTAL_SIZE } from "@/types/heic-converter";
+
+/**
+ * Validation error returned by custom validation functions
+ */
+export interface ValidationError {
+  code: string;
+  message: string;
+}
 
 interface FileUploadZoneProps {
+  /** Callback when valid files are selected */
   onFilesSelected: (files: File[]) => void;
+  /** Whether the upload zone is disabled */
   disabled?: boolean;
+  /** File types to accept (e.g., "image/png,image/jpeg" or ".heic,.heif") */
+  accept?: string;
+  /** Maximum total size for all files in bytes */
+  maxTotalSize?: number;
+  /** Whether to allow multiple file selection */
+  multiple?: boolean;
+  /** Custom validation function for each file (should validate file size, type, etc.) */
+  validationFn?: (file: File) => ValidationError | null;
+  /** Upload zone title */
+  title?: string;
+  /** Upload zone description */
+  description?: string;
+  /** Text to display for max size information */
+  maxSizeLabel?: string;
 }
 
 export function FileUploadZone({
   onFilesSelected,
   disabled = false,
+  accept = "*/*",
+  maxTotalSize,
+  multiple = true,
+  validationFn,
+  title = "Drop files here",
+  description = "or click the button below to select files from your device.",
+  maxSizeLabel,
 }: FileUploadZoneProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,13 +56,15 @@ export function FileUploadZone({
 
       const fileArray = Array.from(files);
 
-      // Validate total size
-      const totalSize = fileArray.reduce((sum, file) => sum + file.size, 0);
-      if (totalSize > MAX_TOTAL_SIZE) {
-        setError(
-          `Total file size (${(totalSize / 1024 / 1024).toFixed(1)}MB) exceeds maximum limit (${MAX_TOTAL_SIZE / 1024 / 1024}MB)`
-        );
-        return;
+      // Validate total size if maxTotalSize is provided
+      if (maxTotalSize) {
+        const totalSize = fileArray.reduce((sum, file) => sum + file.size, 0);
+        if (totalSize > maxTotalSize) {
+          setError(
+            `Total file size (${(totalSize / 1024 / 1024).toFixed(1)}MB) exceeds maximum limit (${(maxTotalSize / 1024 / 1024).toFixed(0)}MB)`
+          );
+          return;
+        }
       }
 
       // Validate individual files
@@ -41,10 +72,16 @@ export function FileUploadZone({
       const errors: string[] = [];
 
       fileArray.forEach((file) => {
-        const validationError = validateHeicFile(file);
-        if (validationError) {
-          errors.push(`${file.name}: ${validationError.message}`);
+        // Use custom validation function if provided
+        if (validationFn) {
+          const validationError = validationFn(file);
+          if (validationError) {
+            errors.push(`${file.name}: ${validationError.message}`);
+          } else {
+            validFiles.push(file);
+          }
         } else {
+          // No validation function provided, accept all files
           validFiles.push(file);
         }
       });
@@ -57,7 +94,7 @@ export function FileUploadZone({
         onFilesSelected(validFiles);
       }
     },
-    [onFilesSelected]
+    [onFilesSelected, maxTotalSize, validationFn]
   );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -114,11 +151,10 @@ export function FileUploadZone({
 
         <div className="flex flex-col items-center gap-2 text-center">
           <h3 className="text-lg font-semibold text-foreground">
-            Drop HEIC files here
+            {title}
           </h3>
           <p className="text-sm text-muted-foreground max-w-md">
-            or click the button below to select files from your device. You can
-            upload multiple files at once.
+            {description}
           </p>
         </div>
 
@@ -126,20 +162,22 @@ export function FileUploadZone({
           <label className="cursor-pointer">
             <input
               type="file"
-              multiple
-              accept=".heic,.heif,image/heic,image/heif"
+              multiple={multiple}
+              accept={accept}
               onChange={handleFileInputChange}
               disabled={disabled}
               className="sr-only"
-              aria-label="Select HEIC files to convert"
+              aria-label="Select files to upload"
             />
             Select Files
           </label>
         </Button>
 
-        <p className="text-xs text-muted-foreground">
-          Maximum file size: 50MB per file, 500MB total
-        </p>
+        {maxSizeLabel && (
+          <p className="text-xs text-muted-foreground">
+            {maxSizeLabel}
+          </p>
+        )}
       </div>
 
       {error && (

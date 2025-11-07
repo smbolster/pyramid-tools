@@ -1,0 +1,1 @@
+            <FileUploadZone onFilesSelected={handleFileUpload} />

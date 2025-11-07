@@ -72,4 +72,12 @@ export const tools: Tool[] = [
     href: "/tools/screenshot-annotator",
     category: "Image Editing",
   },
+  {
+    id: "image-to-svg",
+    name: "Image to SVG",
+    description: "Convert raster images to scalable vector graphics",
+    icon: "Sparkles",
+    href: "/tools/image-to-svg",
+    category: "Image Conversion",
+  },
 ];
