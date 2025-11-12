@@ -41,14 +41,6 @@ export const tools: Tool[] = [
     category: "Image Editing",
   },
   {
-    id: "json-formatter",
-    name: "JSON Formatter",
-    description: "Format and validate JSON data",
-    icon: "Code",
-    href: "/tools/json-formatter",
-    category: "Developer Tools",
-  },
-  {
     id: "qr-generator",
     name: "QR Code Generator",
     description: "Create QR codes from text or URLs",
