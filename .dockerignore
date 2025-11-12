@@ -1,0 +1,62 @@
+# Dependencies
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build output
+.next
+.next/cache
+out
+dist
+build
+
+# Git
+.git
+.gitignore
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env*.local
+
+# Development tools
+.claude
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Documentation and specs (not needed in production)
+specs/
+docs/
+*.md
+README.md
+
+# Testing
+coverage
+.nyc_output
+test-results
+
+# Logs
+*.log
+logs
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker files (don't copy into image)
+Dockerfile
+docker-compose.yml
+docker-compose.dev.yml
+.dockerignore
+
+# Misc
+*.bak
+*.tmp
+.cache

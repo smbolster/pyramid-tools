@@ -166,7 +166,7 @@ export async function splitBySelectedPages(
     });
 
     const pdfBytes = await newPdf.save();
-    const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+    const blob = new Blob([pdfBytes.buffer as ArrayBuffer], { type: 'application/pdf' });
 
     // Generate page range string for filename
     const pageRangeStr = pageNumbers.join('-');
@@ -210,7 +210,7 @@ export async function splitIntoIndividualPages(
       newPdf.addPage(copiedPage);
 
       const pdfBytes = await newPdf.save();
-      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      const blob = new Blob([pdfBytes.buffer as ArrayBuffer], { type: 'application/pdf' });
       const filename = generateSinglePageFilename(originalFilename, i + 1);
 
       results.push({
@@ -262,7 +262,7 @@ export async function splitByRanges(
       });
 
       const pdfBytes = await newPdf.save();
-      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      const blob = new Blob([pdfBytes.buffer as ArrayBuffer], { type: 'application/pdf' });
       const filename = generateRangeFilename(originalFilename, range, i);
 
       results.push({
@@ -317,7 +317,7 @@ export async function splitByPageCount(
       });
 
       const pdfBytes = await newPdf.save();
-      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      const blob = new Blob([pdfBytes.buffer as ArrayBuffer], { type: 'application/pdf' });
       const pageRangeStr = `${pageNumbers[0]}-${pageNumbers[pageNumbers.length - 1]}`;
       const filename = generateSplitFilename(
         originalFilename,

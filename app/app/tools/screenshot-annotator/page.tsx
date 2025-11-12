@@ -50,7 +50,7 @@ export default function ScreenshotAnnotator() {
   const [error, setError] = useState<string | null>(null)
   const [isDragging, setIsDragging] = useState(false)
 
-  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const canvasRef = useRef<HTMLCanvasElement>(null!)
 
   // File upload handlers
   const handleFileSelected = useCallback((file: File) => {
