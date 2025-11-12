@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  app:
+    # Build configuration
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    # Container name for easy reference
+    container_name: pyramid-tools
+
+    # Port mapping: host:container
+    ports:
+      - "3060:3060"
+
+    # Environment variables
+    environment:
+      - NODE_ENV=production
+      - PORT=3060
+
+    # Restart policy: restart unless explicitly stopped
+    restart: unless-stopped
+
+    # Labels for container management and organization
+    labels:
+      com.pyramid-tools.description: "Pyramid Tools - A collection of useful web-based tools"
+      com.pyramid-tools.version: "1.0"
+      com.pyramid-tools.port: "3060"

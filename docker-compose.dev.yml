@@ -1,0 +1,41 @@
+version: '3.8'
+
+# Docker Compose override file for development mode
+# Usage: docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+services:
+  app:
+    # Override build to use builder stage (includes dev dependencies)
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+
+    # Override command to run development server
+    command: npm run dev
+
+    # Override port mapping for dev server
+    ports:
+      - "3050:3050"
+
+    # Mount source code for hot-reload
+    volumes:
+      # Mount app directory for live code changes
+      - ./app:/app
+      # Use anonymous volumes to prevent host from overwriting container's node_modules
+      - /app/node_modules
+      # Use anonymous volume for .next directory to preserve build cache
+      - /app/.next
+
+    # Override environment for development
+    environment:
+      - NODE_ENV=development
+      - PORT=3050
+
+    # Restart on failure for development
+    restart: on-failure
+
+    # Override labels for dev environment
+    labels:
+      com.pyramid-tools.environment: "development"
+      com.pyramid-tools.hot-reload: "enabled"

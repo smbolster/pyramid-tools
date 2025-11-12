@@ -64,11 +64,14 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     const savedTheme = localStorage.getItem(THEME_STORAGE_KEY) as Theme | null;
     const initialPreference = savedTheme || DEFAULT_THEME;
 
+    // Initialize state in a single batch
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setThemePreference(initialPreference);
     const effectiveTheme = getEffectiveTheme(initialPreference);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTheme(effectiveTheme);
     applyTheme(effectiveTheme);
-     
+
   }, []);
 
   /**

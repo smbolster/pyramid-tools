@@ -304,7 +304,7 @@ export function drawPen(ctx: CanvasRenderingContext2D, annotation: PenAnnotation
  */
 export function drawHighlighter(ctx: CanvasRenderingContext2D, annotation: HighlighterAnnotation) {
   // Highlighter is essentially a pen with different default opacity
-  drawPen(ctx, annotation as PenAnnotation)
+  drawPen(ctx, annotation as unknown as PenAnnotation)
 }
 
 /**
