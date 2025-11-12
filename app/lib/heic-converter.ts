@@ -3,11 +3,12 @@ import {
   ERROR_MESSAGES,
   MAX_FILE_SIZE,
   SUPPORTED_EXTENSIONS,
-  CONVERSION_QUALITY,
+  ConvertedFile,
+  ConvertHeicResponse,
 } from "@/types/heic-converter";
 
 /**
- * Validates if a file is a valid HEIC file
+ * Validates if a file is a valid HEIC file (client-side pre-validation)
  */
 export function validateHeicFile(file: File): ConversionError | null {
   // Check file size
@@ -35,57 +36,73 @@ export function validateHeicFile(file: File): ConversionError | null {
 }
 
 /**
- * Converts a HEIC file to JPEG format
+ * Uploads HEIC files to the server and returns converted JPEG files
  */
-export async function convertHeicToJpeg(
-  file: File,
-  quality: number = CONVERSION_QUALITY
-): Promise<Blob> {
+export async function uploadAndConvertHeic(
+  files: File[]
+): Promise<ConvertedFile[]> {
   try {
-    // Validate file first
-    const validationError = validateHeicFile(file);
-    if (validationError) {
-      throw new Error(validationError.message);
-    }
-
-    // Dynamically import heic2any only on the client
-    const heic2any = (await import("heic2any")).default;
-
-    // Convert HEIC to JPEG
-    const convertedBlob = await heic2any({
-      blob: file,
-      toType: "image/jpeg",
-      quality: quality,
+    // Create FormData
+    const formData = new FormData();
+    files.forEach((file) => {
+      formData.append("files", file);
     });
 
-    // heic2any might return an array of blobs for multi-image HEIC files
-    // We'll take the first one
-    if (Array.isArray(convertedBlob)) {
-      return convertedBlob[0];
+    // Upload to API endpoint
+    const response = await fetch("/api/convert-heic", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      // Try to parse error response
+      const errorData = await response.json().catch(() => null);
+      if (errorData?.error) {
+        throw new Error(errorData.error.message || ERROR_MESSAGES.SERVER_ERROR);
+      }
+      throw new Error(ERROR_MESSAGES.UPLOAD_FAILED);
     }
 
-    return convertedBlob as Blob;
+    // Parse response
+    const data: ConvertHeicResponse = await response.json();
+
+    if (!data.success) {
+      throw new Error(ERROR_MESSAGES.CONVERSION_FAILED);
+    }
+
+    // Check if there were any conversion errors
+    if (data.errors && data.errors.length > 0) {
+      console.warn("Some files failed to convert:", data.errors);
+    }
+
+    return data.conversions;
   } catch (error) {
-    // Handle specific errors
     if (error instanceof Error) {
-      if (error.message.includes("memory")) {
-        throw new Error(ERROR_MESSAGES.OUT_OF_MEMORY);
-      }
-      if (error.message.includes("not supported")) {
-        throw new Error(ERROR_MESSAGES.BROWSER_NOT_SUPPORTED);
-      }
-      if (error.message.includes("corrupt")) {
-        throw new Error(ERROR_MESSAGES.CORRUPTED_FILE);
-      }
-      // Re-throw validation errors
+      // Re-throw known errors
       const errorMessages = Object.values(ERROR_MESSAGES) as string[];
       if (errorMessages.includes(error.message)) {
         throw error;
       }
+      // Network errors
+      if (error.name === "TypeError" && error.message.includes("fetch")) {
+        throw new Error(ERROR_MESSAGES.NETWORK_ERROR);
+      }
     }
-    // Generic conversion failure
-    throw new Error(ERROR_MESSAGES.CONVERSION_FAILED);
+    // Generic error
+    throw new Error(ERROR_MESSAGES.UPLOAD_FAILED);
   }
+}
+
+/**
+ * Converts base64 data to Blob
+ */
+export function base64ToBlob(base64: string, mimeType = "image/jpeg"): Blob {
+  const binaryString = atob(base64);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return new Blob([bytes], { type: mimeType });
 }
 
 /**
