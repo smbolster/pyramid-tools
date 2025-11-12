@@ -13,7 +13,8 @@ import {
   MAX_TOTAL_SIZE,
 } from "@/types/heic-converter";
 import {
-  convertHeicToJpeg,
+  uploadAndConvertHeic,
+  base64ToBlob,
   createPreviewUrl,
   generateJpegFilename,
   validateHeicFile,
@@ -35,87 +36,67 @@ export default function HeicToJpegConverter() {
     setFiles(initialStates);
     setIsConverting(true);
 
-    // Convert files with concurrency limit
-    const concurrencyLimit = 3;
-    const results: FileConversionState[] = [];
+    try {
+      // Update status to uploading/converting
+      setFiles((prev) =>
+        prev.map((f) => ({
+          ...f,
+          status: ConversionStatus.CONVERTING,
+          progress: 50,
+        }))
+      );
 
-    for (let i = 0; i < initialStates.length; i += concurrencyLimit) {
-      const batch = initialStates.slice(i, i + concurrencyLimit);
+      // Upload and convert on server
+      const convertedFiles = await uploadAndConvertHeic(selectedFiles);
 
-      const batchResults = await Promise.all(
-        batch.map(async (fileState) => {
-          try {
-            // Update status to converting
-            setFiles((prev) =>
-              prev.map((f) =>
-                f.file === fileState.file
-                  ? { ...f, status: ConversionStatus.CONVERTING, progress: 0 }
-                  : f
-              )
-            );
+      // Process results and update state
+      const updatedStates: FileConversionState[] = initialStates.map(
+        (fileState) => {
+          const converted = convertedFiles.find(
+            (cf) => cf.originalName === fileState.file.name
+          );
 
-            // Simulate progress updates
-            const progressInterval = setInterval(() => {
-              setFiles((prev) =>
-                prev.map((f) =>
-                  f.file === fileState.file && f.progress < 90
-                    ? { ...f, progress: f.progress + 10 }
-                    : f
-                )
-              );
-            }, 200);
-
-            // Perform conversion
-            const convertedBlob = await convertHeicToJpeg(fileState.file);
-
-            clearInterval(progressInterval);
-
-            // Create preview
+          if (converted) {
+            // Convert base64 to blob
+            const convertedBlob = base64ToBlob(converted.data);
             const preview = createPreviewUrl(convertedBlob);
 
-            // Update to success
-            const successState: FileConversionState = {
+            return {
               ...fileState,
               status: ConversionStatus.SUCCESS,
               progress: 100,
               convertedBlob,
               preview,
             };
-
-            setFiles((prev) =>
-              prev.map((f) =>
-                f.file === fileState.file ? successState : f
-              )
-            );
-
-            return successState;
-          } catch (error) {
-            // Update to error
-            const errorState: FileConversionState = {
+          } else {
+            // File failed to convert
+            return {
               ...fileState,
               status: ConversionStatus.ERROR,
               progress: 0,
-              error:
-                error instanceof Error
-                  ? error.message
-                  : "Unknown error occurred",
+              error: "Failed to convert file",
             };
-
-            setFiles((prev) =>
-              prev.map((f) =>
-                f.file === fileState.file ? errorState : f
-              )
-            );
-
-            return errorState;
           }
-        })
+        }
       );
 
-      results.push(...batchResults);
+      setFiles(updatedStates);
+    } catch (error) {
+      // Update all files to error state
+      setFiles((prev) =>
+        prev.map((f) => ({
+          ...f,
+          status: ConversionStatus.ERROR,
+          progress: 0,
+          error:
+            error instanceof Error
+              ? error.message
+              : "Unknown error occurred",
+        }))
+      );
+    } finally {
+      setIsConverting(false);
     }
-
-    setIsConverting(false);
   }, []);
 
   const handleDownload = useCallback(async () => {
@@ -183,8 +164,8 @@ export default function HeicToJpegConverter() {
             </h1>
             <div className="mx-auto mt-2 h-1 w-24 rounded-full bg-gradient-to-r from-primary to-accent"></div>
             <p className="mt-6 text-lg text-muted-foreground">
-              Convert your HEIC photos to JPEG format. All processing happens
-              in your browser - your photos never leave your device.
+              Convert your HEIC photos to JPEG format quickly and efficiently
+              with server-side processing.
             </p>
           </div>
         </div>
@@ -243,9 +224,9 @@ export default function HeicToJpegConverter() {
           </h2>
           <div className="space-y-3 text-sm text-muted-foreground">
             <p>
-              <strong className="text-foreground">Privacy First:</strong> All
-              conversions happen in your browser using WebAssembly. Your photos
-              are never uploaded to any server.
+              <strong className="text-foreground">Server-Side Processing:</strong>{" "}
+              Files are uploaded to our server for conversion and deleted immediately
+              after processing. Your photos are never stored permanently.
             </p>
             <p>
               <strong className="text-foreground">HEIC Format:</strong> HEIC
