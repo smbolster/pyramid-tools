@@ -1,7 +1,7 @@
 services:
 
   app:
-    image: ghcr.io/mckimcreed/pyramid-tools:0.1.0
+    image: ghcr.io/mckimcreed/pyramid-tools:latest
     # Container name for easy reference
     container_name: pyramid-tools
 
