@@ -1,12 +1,7 @@
-version: '3.8'
-
 services:
-  app:
-    # Build configuration
-    build:
-      context: .
-      dockerfile: Dockerfile
 
+  app:
+    image: ghcr.io/mckimcreed/pyramid-tools:0.1.0
     # Container name for easy reference
     container_name: pyramid-tools
 
