@@ -72,4 +72,12 @@ export const tools: Tool[] = [
     href: "/tools/image-to-svg",
     category: "Image Conversion",
   },
+  {
+    id: "handwriting-to-text",
+    name: "Handwriting to Text",
+    description: "Extract text from handwritten documents using AI",
+    icon: "PenLine",
+    href: "/tools/handwriting-to-text",
+    category: "AI Tools",
+  },
 ];
