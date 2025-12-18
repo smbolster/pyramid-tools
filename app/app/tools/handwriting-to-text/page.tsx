@@ -256,7 +256,7 @@ export default function HandwritingToText() {
                 Limitations
               </h3>
               <ul className="list-disc list-inside">
-                <li>Maximum file size: 10MB per image</li>
+                <li>Maximum file size: 10MB per image (automatically compressed if needed for processing)</li>
                 <li>Maximum 5 images per batch</li>
                 <li>
                   Very messy or illegible handwriting may not be accurately

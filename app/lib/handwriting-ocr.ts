@@ -5,6 +5,7 @@ import {
   ExtractTextRequest,
   ExtractTextResponse,
 } from '@/types/handwriting-ocr';
+import { compressImage, needsCompression } from './image-compression';
 
 /**
  * Validates an image file for OCR processing
@@ -54,13 +55,33 @@ export async function uploadAndExtractText(
     }
   }
 
-  // Convert files to base64
+  // Claude API has a 5MB limit for base64-encoded images
+  // We target 3.5MB compressed size to ensure base64 stays under 5MB with safety margin
+  const CLAUDE_API_LIMIT = 5 * 1024 * 1024; // 5MB
+  const TARGET_COMPRESSED_SIZE = 3.5 * 1024 * 1024; // 3.5MB
+
+  // Process files: compress if needed, then convert to base64
   const images = await Promise.all(
-    files.map(async (file) => ({
-      filename: file.name,
-      data: await fileToBase64(file),
-      mimeType: file.type,
-    }))
+    files.map(async (file) => {
+      let processedFile = file;
+
+      // Check if compression is needed
+      if (needsCompression(file, CLAUDE_API_LIMIT)) {
+        try {
+          processedFile = await compressImage(file, TARGET_COMPRESSED_SIZE);
+        } catch (error) {
+          throw new Error(
+            `Failed to compress ${file.name}: ${error instanceof Error ? error.message : 'Unknown error'}`
+          );
+        }
+      }
+
+      return {
+        filename: file.name,
+        data: await fileToBase64(processedFile),
+        mimeType: processedFile.type,
+      };
+    })
   );
 
   // Upload to API
