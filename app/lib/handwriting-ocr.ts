@@ -1,13 +1,22 @@
 import {
   MAX_FILE_SIZE,
-  SUPPORTED_IMAGE_FORMATS,
+  SUPPORTED_FORMATS,
   ERROR_MESSAGES,
   ExtractTextRequest,
   ExtractTextResponse,
 } from '@/types/handwriting-ocr';
 
 /**
- * Validates an image file for OCR processing
+ * Checks if a file is a PDF
+ * @param file - The file to check
+ * @returns True if file is a PDF
+ */
+export function isPdfFile(file: File): boolean {
+  return file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+}
+
+/**
+ * Validates an image or PDF file for OCR processing
  * @param file - The file to validate
  * @returns Validation result with success status and optional error message
  */
@@ -15,7 +24,12 @@ export function validateImageFile(file: File): { valid: boolean; error?: string 
   if (file.size > MAX_FILE_SIZE) {
     return { valid: false, error: ERROR_MESSAGES.FILE_TOO_LARGE };
   }
-  if (!SUPPORTED_IMAGE_FORMATS.includes(file.type as typeof SUPPORTED_IMAGE_FORMATS[number])) {
+
+  // Check if it's a supported format (images or PDF)
+  const isSupported = SUPPORTED_FORMATS.includes(file.type as typeof SUPPORTED_FORMATS[number])
+    || file.name.toLowerCase().endsWith('.pdf');
+
+  if (!isSupported) {
     return { valid: false, error: ERROR_MESSAGES.INVALID_FILE_TYPE };
   }
   return { valid: true };
@@ -68,6 +82,29 @@ export async function uploadAndExtractText(
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ images } as ExtractTextRequest),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || ERROR_MESSAGES.UPLOAD_FAILED);
+  }
+
+  return response.json();
+}
+
+/**
+ * Sends pre-converted images to the API for text extraction
+ * Used for PDF pages that have been converted to images
+ * @param images - Array of image data with filename, data (base64), and mimeType
+ * @returns Promise resolving to extraction results
+ */
+export async function extractTextFromImages(
+  images: Array<{ filename: string; data: string; mimeType: string }>
+): Promise<ExtractTextResponse> {
+  const response = await fetch('/api/extract-handwriting', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ images }),
   });
 
   if (!response.ok) {

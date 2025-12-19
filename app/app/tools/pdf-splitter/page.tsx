@@ -15,7 +15,7 @@ import { PdfPageGrid } from '@/components/pdf-page-grid';
 import { SplitMethodSelector } from '@/components/split-method-selector';
 import { SplitResultsPreview } from '@/components/split-results-preview';
 import { downloadBlob } from '@/lib/zip-utils';
-import { validatePdfFile, parsePdfFile, splitPdf } from '@/lib/pdf-splitter';
+import { validatePdfFile, splitPdf } from '@/lib/pdf-splitter';
 import { generatePdfPreview, getPdfPageCount } from '@/lib/pdf-preview';
 import type {
   PdfPageState,
