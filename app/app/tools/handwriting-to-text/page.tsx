@@ -165,7 +165,7 @@ export default function HandwritingToText() {
               accept="image/*"
               title="Drop handwritten document images here"
               description="or click the button below to select up to 5 images (JPEG, PNG, WebP, HEIC)"
-              maxSizeLabel="Maximum 10MB per image"
+              maxSizeLabel="Maximum 50MB per image"
             />
           )}
 
@@ -245,7 +245,7 @@ export default function HandwritingToText() {
                 Privacy & Security
               </h3>
               <p>
-                Images are processed securely through the Anthropic API and are
+                Images are processed securely through the OpenAI API and are
                 not stored permanently. The AI analyzes your handwriting to
                 extract text, and the results are returned directly to you.
               </p>
@@ -256,7 +256,7 @@ export default function HandwritingToText() {
                 Limitations
               </h3>
               <ul className="list-disc list-inside">
-                <li>Maximum file size: 10MB per image</li>
+                <li>Maximum file size: 50MB per image</li>
                 <li>Maximum 5 images per batch</li>
                 <li>
                   Very messy or illegible handwriting may not be accurately

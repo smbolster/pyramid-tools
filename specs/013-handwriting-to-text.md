@@ -1,5 +1,7 @@
 # Feature: Handwriting to Text OCR
 
+> **Note**: This feature was originally implemented with Claude Haiku 4.5 but has been migrated to OpenAI GPT-4o to support larger file uploads (50MB vs 5MB). See specs/014-switch-handwriting-ocr-to-openai.md for migration details.
+
 ## Feature Plan Created: specs/013-handwriting-to-text.md
 
 ## Feature Description
