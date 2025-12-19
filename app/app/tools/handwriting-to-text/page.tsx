@@ -11,13 +11,20 @@ import {
   FileOCRState,
   ProcessingStatus,
   MAX_FILES,
+  MAX_PDF_PAGES,
   ERROR_MESSAGES,
 } from '@/types/handwriting-ocr';
 import {
-  uploadAndExtractText,
+  extractTextFromImages,
   downloadTextFile,
   validateImageFile,
+  isPdfFile,
+  fileToBase64,
 } from '@/lib/handwriting-ocr';
+import {
+  getPdfPageCount,
+  convertPdfToImages,
+} from '@/lib/pdf-to-images';
 
 export default function HandwritingToText() {
   const [files, setFiles] = useState<FileOCRState[]>([]);
@@ -32,12 +39,25 @@ export default function HandwritingToText() {
 
     // Validate each file
     const validationErrors: string[] = [];
-    selectedFiles.forEach((file) => {
+    for (const file of selectedFiles) {
       const validation = validateImageFile(file);
       if (!validation.valid) {
         validationErrors.push(`${file.name}: ${validation.error}`);
+        continue;
       }
-    });
+
+      // Check PDF page count
+      if (isPdfFile(file)) {
+        try {
+          const pageCount = await getPdfPageCount(file);
+          if (pageCount > MAX_PDF_PAGES) {
+            validationErrors.push(`${file.name}: ${ERROR_MESSAGES.TOO_MANY_PAGES}`);
+          }
+        } catch {
+          validationErrors.push(`${file.name}: Failed to read PDF`);
+        }
+      }
+    }
 
     if (validationErrors.length > 0) {
       alert(validationErrors.join('\n'));
@@ -65,26 +85,97 @@ export default function HandwritingToText() {
         prev.map((f) => ({
           ...f,
           status: ProcessingStatus.PROCESSING,
-          progress: 50,
+          progress: 25,
         }))
       );
 
-      // Call API
-      const response = await uploadAndExtractText(files.map((f) => f.file));
+      // Prepare images for API - convert PDFs to images, pass images through
+      const allImages: Array<{
+        filename: string;
+        data: string;
+        mimeType: string;
+        originalFile: string;
+      }> = [];
+
+      for (const fileState of files) {
+        const file = fileState.file;
+
+        if (isPdfFile(file)) {
+          // Convert PDF pages to images
+          setFiles((prev) =>
+            prev.map((f) =>
+              f.file.name === file.name
+                ? { ...f, progress: 40 }
+                : f
+            )
+          );
+
+          const pages = await convertPdfToImages(file);
+          for (const page of pages) {
+            allImages.push({
+              filename: `${file.name}_page${page.pageNumber}`,
+              data: page.imageData,
+              mimeType: page.mimeType,
+              originalFile: file.name,
+            });
+          }
+        } else {
+          // Regular image file
+          const base64 = await fileToBase64(file);
+          allImages.push({
+            filename: file.name,
+            data: base64,
+            mimeType: file.type || 'image/jpeg',
+            originalFile: file.name,
+          });
+        }
+      }
+
+      // Update progress
+      setFiles((prev) =>
+        prev.map((f) => ({
+          ...f,
+          progress: 60,
+        }))
+      );
+
+      // Call API with all images
+      const response = await extractTextFromImages(
+        allImages.map(({ filename, data, mimeType }) => ({
+          filename,
+          data,
+          mimeType,
+        }))
+      );
+
+      // Group results by original file (for PDFs with multiple pages)
+      const resultsByFile = new Map<string, string[]>();
+
+      for (const img of allImages) {
+        const result = response.results.find((r) => r.filename === img.filename);
+        const existingResults = resultsByFile.get(img.originalFile) || [];
+
+        if (result?.text) {
+          existingResults.push(result.text);
+        } else if (result?.error) {
+          existingResults.push(`[Error: ${result.error}]`);
+        }
+
+        resultsByFile.set(img.originalFile, existingResults);
+      }
 
       // Update states with results
       setFiles((prev) =>
         prev.map((fileState) => {
-          const result = response.results.find(
-            (r) => r.filename === fileState.file.name
-          );
+          const texts = resultsByFile.get(fileState.file.name) || [];
+          const combinedText = texts.join('\n\n--- Page Break ---\n\n');
 
-          if (result?.error) {
+          if (!combinedText || combinedText.includes('[Error:')) {
             return {
               ...fileState,
               status: ProcessingStatus.ERROR,
               progress: 100,
-              error: result.error,
+              error: texts.length === 0 ? 'No text extracted' : combinedText,
             };
           }
 
@@ -92,7 +183,7 @@ export default function HandwritingToText() {
             ...fileState,
             status: ProcessingStatus.COMPLETED,
             progress: 100,
-            extractedText: result?.text || '',
+            extractedText: combinedText,
           };
         })
       );
@@ -162,10 +253,10 @@ export default function HandwritingToText() {
           {files.length === 0 && (
             <FileUploadZone
               onFilesSelected={handleFilesSelected}
-              accept="image/*"
-              title="Drop handwritten document images here"
-              description="or click the button below to select up to 5 images (JPEG, PNG, WebP, HEIC)"
-              maxSizeLabel="Maximum 50MB per image"
+              accept="image/*,application/pdf,.pdf"
+              title="Drop handwritten documents here"
+              description="or click the button below to select up to 5 files (JPEG, PNG, WebP, HEIC, PDF)"
+              maxSizeLabel="Maximum 50MB per file, 10 pages per PDF"
             />
           )}
 
@@ -175,7 +266,7 @@ export default function HandwritingToText() {
               <Button onClick={handleExtractText} size="lg">
                 <FileText className="mr-2 h-5 w-5" />
                 Extract Text from {files.length}{' '}
-                {files.length === 1 ? 'Image' : 'Images'}
+                {files.length === 1 ? 'File' : 'Files'}
               </Button>
               <Button onClick={handleReset} variant="outline" size="lg">
                 Clear All
@@ -208,10 +299,10 @@ export default function HandwritingToText() {
                 How It Works
               </h3>
               <p>
-                This tool uses Claude AI&apos;s advanced vision capabilities to
+                This tool uses OpenAI&apos;s GPT-4o vision capabilities to
                 accurately recognize and extract text from handwritten
-                documents. Upload an image of your handwritten notes, and the
-                AI will transcribe the text for you.
+                documents. Upload images or PDFs of your handwritten notes, and
+                the AI will transcribe the text for you.
               </p>
             </div>
 
@@ -224,6 +315,7 @@ export default function HandwritingToText() {
                 <li>PNG images</li>
                 <li>WebP images</li>
                 <li>HEIC images (iPhone photos)</li>
+                <li>PDF documents (scanned handwritten pages)</li>
               </ul>
             </div>
 
@@ -236,7 +328,7 @@ export default function HandwritingToText() {
                 <li>Take photos directly overhead, not at an angle</li>
                 <li>Use high-resolution images when possible</li>
                 <li>Make sure handwriting is clear and legible</li>
-                <li>Process one page at a time for better accuracy</li>
+                <li>For PDFs, ensure pages are scanned at high quality</li>
               </ul>
             </div>
 
@@ -245,9 +337,10 @@ export default function HandwritingToText() {
                 Privacy & Security
               </h3>
               <p>
-                Images are processed securely through the OpenAI API and are
-                not stored permanently. The AI analyzes your handwriting to
-                extract text, and the results are returned directly to you.
+                Files are processed securely through the OpenAI API and are
+                not stored permanently. PDFs are converted to images locally in
+                your browser before processing. The AI analyzes your handwriting
+                to extract text, and the results are returned directly to you.
               </p>
             </div>
 
@@ -256,8 +349,9 @@ export default function HandwritingToText() {
                 Limitations
               </h3>
               <ul className="list-disc list-inside">
-                <li>Maximum file size: 50MB per image</li>
-                <li>Maximum 5 images per batch</li>
+                <li>Maximum file size: 50MB per file</li>
+                <li>Maximum 5 files per batch</li>
+                <li>Maximum 10 pages per PDF</li>
                 <li>
                   Very messy or illegible handwriting may not be accurately
                   recognized

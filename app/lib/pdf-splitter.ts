@@ -5,7 +5,6 @@
 
 import { PDFDocument } from 'pdf-lib';
 import type {
-  SplitMethod,
   SplitConfig,
   SplitResult,
   SplitRange,
@@ -120,13 +119,11 @@ function generateSinglePageFilename(originalName: string, pageNumber: number): s
  * Generates a filename for a custom range
  * @param originalName - Original filename (without extension)
  * @param range - The split range
- * @param index - Index of this range
  * @returns Generated filename
  */
 function generateRangeFilename(
   originalName: string,
-  range: SplitRange,
-  index: number
+  range: SplitRange
 ): string {
   const cleanName = sanitizeFilename(cleanFilename(originalName));
 
@@ -263,7 +260,7 @@ export async function splitByRanges(
 
       const pdfBytes = await newPdf.save();
       const blob = new Blob([pdfBytes.buffer as ArrayBuffer], { type: 'application/pdf' });
-      const filename = generateRangeFilename(originalFilename, range, i);
+      const filename = generateRangeFilename(originalFilename, range);
 
       results.push({
         blob,
