@@ -36,7 +36,7 @@ export interface ExtractTextResponse {
   }>;
 }
 
-export const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+export const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB (OpenAI limit)
 export const MAX_FILES = 5; // Process up to 5 images at once
 export const SUPPORTED_IMAGE_FORMATS = [
   'image/jpeg',
@@ -47,7 +47,7 @@ export const SUPPORTED_IMAGE_FORMATS = [
 ] as const;
 
 export const ERROR_MESSAGES = {
-  FILE_TOO_LARGE: 'File size exceeds 10MB limit',
+  FILE_TOO_LARGE: 'File size exceeds 50MB limit',
   INVALID_FILE_TYPE: 'Unsupported file format. Please use JPEG, PNG, WebP, or HEIC',
   TOO_MANY_FILES: 'Maximum 5 files can be processed at once',
   UPLOAD_FAILED: 'Failed to upload file',

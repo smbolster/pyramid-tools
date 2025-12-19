@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import Anthropic from '@anthropic-ai/sdk';
+import OpenAI from 'openai';
 import {
   ExtractTextRequest,
   ExtractTextResponse,
@@ -10,30 +10,28 @@ import {
 } from '@/types/handwriting-ocr';
 
 /**
- * Extracts handwritten text from an image using Claude's vision API
- * @param client - Anthropic client instance
+ * Extracts handwritten text from an image using OpenAI's GPT-4o vision API
+ * @param client - OpenAI client instance
  * @param imageData - Base64 encoded image data
  * @param mimeType - MIME type of the image
  * @returns Extracted text from the image
  */
 async function extractTextFromImage(
-  client: Anthropic,
+  client: OpenAI,
   imageData: string,
   mimeType: string
 ): Promise<string> {
-  const message = await client.messages.create({
-    model: 'claude-haiku-4-5-20251001', // Haiku 4.5 for cost-efficiency and speed
-    max_tokens: 4096,
+  const completion = await client.chat.completions.create({
+    model: 'gpt-4o',
     messages: [
       {
         role: 'user',
         content: [
           {
-            type: 'image',
-            source: {
-              type: 'base64',
-              media_type: mimeType as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp',
-              data: imageData,
+            type: 'image_url',
+            image_url: {
+              url: `data:${mimeType};base64,${imageData}`,
+              detail: 'high', // Use high detail for best OCR accuracy
             },
           },
           {
@@ -43,20 +41,21 @@ async function extractTextFromImage(
         ],
       },
     ],
+    max_tokens: 4096,
   });
 
-  const textContent = message.content.find((c) => c.type === 'text');
-  if (!textContent || textContent.type !== 'text') {
-    throw new Error('No text in Claude response');
+  const textContent = completion.choices[0]?.message?.content;
+  if (!textContent) {
+    throw new Error('No text in OpenAI response');
   }
 
-  return textContent.text;
+  return textContent;
 }
 
 export async function POST(request: NextRequest) {
   try {
     // Validate API key is configured
-    const apiKey = process.env.ANTHROPIC_API_KEY;
+    const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
       return NextResponse.json(
         { message: ERROR_MESSAGES.API_KEY_MISSING },
@@ -116,8 +115,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Initialize Anthropic client
-    const client = new Anthropic({ apiKey });
+    // Initialize OpenAI client
+    const client = new OpenAI({ apiKey });
 
     // Process each image
     const results = await Promise.all(
@@ -159,16 +158,22 @@ export async function POST(request: NextRequest) {
     }
 
     if (error instanceof Error) {
-      // Check for rate limit errors
-      if (error.message.includes('rate_limit')) {
+      // Check for OpenAI rate limit errors
+      if (
+        error.message.includes('429') ||
+        error.message.includes('rate_limit_exceeded')
+      ) {
         return NextResponse.json(
           { message: 'Rate limit exceeded. Please try again later.' },
           { status: 429 }
         );
       }
 
-      // Check for authentication errors
-      if (error.message.includes('authentication') || error.message.includes('api_key')) {
+      // Check for OpenAI authentication errors
+      if (
+        error.message.includes('401') ||
+        error.message.includes('invalid_api_key')
+      ) {
         return NextResponse.json(
           { message: 'API authentication failed. Please check configuration.' },
           { status: 500 }
