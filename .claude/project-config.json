@@ -1,0 +1,17 @@
+{
+  "github": {
+    "owner": "smbolster",
+    "repo": "pyramid-tools",
+    "baseBranch": "master"
+  },
+  "build": {
+    "solution": "app/package.json",
+    "testCommand": "npm run lint --prefix app",
+    "buildCommand": "npm run build --prefix app",
+    "publishProfile": null
+  },
+  "validation": [
+    "npm run build --prefix app",
+    "npm run lint --prefix app"
+  ]
+}

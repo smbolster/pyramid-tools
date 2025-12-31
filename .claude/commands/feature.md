@@ -1,36 +1,92 @@
 # Feature Planning
 
-Create a new plan in specs/\*.md to implement the `Feature` using the exact specified markdown `Plan Format`. Follow the `Instructions` to create the plan use the `Relevant Files` to focus on the right files.
+First, create a new branch for this feature by calling the create-branch command:
+
+- Execute: `/create-branch feature $ARGUMENTS`
+- This will create and checkout a new branch like `feature/feature-description`
+- Then proceed with planning below
+
+Create a new plan in specs/\*.md to implement the `Feature` using the exact specified markdown `Plan Format`. Follow the `Instructions` to create the plan.
 
 ## Instructions
 
-- You're writing a plan to implement a net new feature that will add value to the application.
-- Create the plan in the `specs/*.md` file. Name it appropriately based on the `Feature`and prefix the the spec with a 3 digit number in sequence, start with 001 if there are no numbered specs already.
-- Use the `Plan Format` below to create the plan.
-- Research the codebase to understand existing patterns, architecture, and conventions before planning the feature.
-- IMPORTANT: Replace every <placeholder> in the `Plan Format` with the requested value. Add as much detail as needed to implement the feature successfully.
-- Use your reasoning model: THINK HARD about the feature requirements, design, and implementation approach.
-- Follow existing patterns and conventions in the codebase. Don't reinvent the wheel.
-- Design for extensibility and maintainability.
-- If you need a new library, use `uv add` and be sure to report it in the `Notes` section of the `Plan Format`.
-- Respect requested files in the `Relevant Files` section.
-- Start your research by reading the `README.md` file.
+1. **Read Project Configuration**
 
-## Relevant Files
+   Read the following files in the `.claude/` directory:
+   - `project-config.json` - For GitHub settings and build commands
+   - `project-context.md` - For relevant files and project structure
 
-Focus on the following files:
+2. **Research and Plan**
 
-- `README.md` - Contains the project overview and instructions.
-- `app/server/**` - Contains the codebase server.
-- `app/client/**` - Contains the codebase client.
-- `scripts/**` - Contains the scripts to start and stop the server + client.
+   - You're writing a plan to implement a net new feature that will add value to the application.
+   - Create the plan in the `specs/*.md` file. Name it appropriately based on the `Feature` and prefix the spec with a 3 digit number in sequence, start with 001 if there are no numbered specs already.
+   - Use the `Plan Format` below to create the plan.
+   - Research the codebase to understand existing patterns, architecture, and conventions before planning the feature.
+   - IMPORTANT: Replace every <placeholder> in the `Plan Format` with the requested value. Add as much detail as needed to implement the feature successfully.
+   - Use your reasoning model: THINK HARD about the feature requirements, design, and implementation approach.
+   - Follow existing patterns and conventions in the codebase. Don't reinvent the wheel.
+   - Design for extensibility and maintainability.
+   - If you need a new NuGet package, be sure to report it in the `Notes` section of the `Plan Format`.
+   - Reference the `project-context.md` for relevant files to focus on.
+   - Start your research by reading the `CLAUDE.md` file for project overview and architecture.
 
-Ignore all other files in the codebase.
+## GitHub Integration
+
+After creating the spec file, create a GitHub Issue with task checkboxes.
+
+### 1. Verify GitHub CLI Authentication
+
+Run `gh auth status` to verify authentication. If not authenticated, inform user to run `gh auth login`.
+
+### 2. Create Feature Issue
+
+Create a Feature issue using the feature name and description from the spec:
+
+```bash
+gh issue create --repo <github.owner>/<github.repo> --title "<feature name>" --body "<issue body>" --label "feature"
+```
+
+The issue body should include:
+- Feature description from the spec
+- User story
+- Task checklist (from Step by Step Tasks section)
+
+Use a HEREDOC for the body to ensure proper formatting.
+
+### 3. Extract Issue Number
+
+- Extract the Issue number from the gh output (the URL contains the issue number)
+- Store this number for updating the spec
+
+### 4. Update Spec with Issue Number
+
+After creating the Issue, update the spec file with the GitHub Issue number:
+
+- Replace `<issue-number>` in the `## GitHub Issue:` section with the actual Issue number
+- This allows `/implement` and `/commit-with-pr` commands to reference the Issue directly
+
+### 5. Confirm Success
+
+After creating the issue:
+
+- Output: "Feature issue created successfully in GitHub!"
+- Show Issue number, title, and URL
+- List all tasks as checkboxes in the issue
+
+### 6. STOP - Do Not Implement
+
+**IMPORTANT:** After creating the spec and GitHub issue, STOP.
+
+- Do NOT start implementing the feature
+- Do NOT write any code
+- Do NOT modify any source files
 
 ## Plan Format
 
 ```md
 # Feature: <feature name>
+
+## GitHub Issue: #<issue-number>
 
 ## Feature Plan Created: <feature filepath>
 
@@ -100,10 +156,7 @@ IMPORTANT: Execute every step in order, top to bottom.
 
 Execute every command to validate the feature works correctly with zero regressions.
 
-<list commands you'll use to validate with 100% confidence the feature is implemented correctly with zero regressions. every command must execute without errors so be specific about what you want to run to validate the feature works as expected. Include commands to test the feature end-to-end.>
-
-- `cd app && npm run lint` - Run linting to validate code quality
-- `cd app && npm run build` - Build the Next.js app to validate there are no build errors
+<list commands from project-config.json validation array, plus any feature-specific validation commands>
 
 ## Notes
 
